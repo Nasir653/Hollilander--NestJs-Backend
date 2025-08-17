@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String              @id @default(uuid())
+  roleId            Int                 @map("role_id")
+  firstName         String?             @map("first_name") @db.VarChar(120)
+  lastName          String?             @map("last_name") @db.VarChar(120)
+  email             String              @unique @db.VarChar(150)
+  countryCode       String?             @map("country_code") @db.VarChar(8)
+  phoneNumber       String?             @map("phone_number") @db.VarChar(15)
+  password          String              @db.VarChar(300)
+  dob               DateTime?           @db.Date
+  address           String?
+  country           String?
+  gender            String?
+  otp               Int?
+  isIreland         Boolean?            @map("is_ireland")
+  ppsNumber         String?             @map("pps_number")
+  visaTypeId        Int?                @map("visa_type_id")
+  isDrive           Boolean?            @map("is_drive")
+  driverLicenseUrl  String?             @map("driver_license") @db.VarChar(350)
+  uniform           Boolean?
+  uniformType       String?             @map("uniform_type") @db.VarChar(6)
+  status            Status
+  deletedAt         DateTime?           @map("deleted_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @default(now()) @map("updated_at")
+  documents         StaffDocument[]
+  staffTimeLogs     StaffTimeLogs[]
+  staffRequests     StaffRequest[]      @relation("StaffRequestStaff")
+  adminRequests     StaffRequest[]      @relation("StaffRequestAdmin")
+  role              Role                @relation(fields: [roleId], references: [id])
+  visaType          VisaType?           @relation(fields: [visaTypeId], references: [id])
+  staffAvailability StaffAvailability[]
+
+  @@map("users")
+}
+
+model Role {
+  id        Int       @id @default(autoincrement())
+  role      String    @unique
+  status    String
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  user      User[]
+
+  @@map("role")
+}
+
+model StaffDocument {
+  id        String       @id @default(uuid())
+  userId    String       @map("user_id")
+  docId     Int          @map("doc_id")
+  docUrl    String?      @map("doc_url")
+  docExpire DateTime?    @map("doc_expire")
+  docStatus DocStatus    @default(PENDING)
+  deletedAt DateTime?    @map("deleted_at")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @default(now()) @map("updated_at")
+  user      User         @relation(fields: [userId], references: [id])
+  document  AllDocuments @relation(fields: [docId], references: [id])
+
+  @@map("staff_documents")
+}
+
+model Countries {
+  id          Int       @id @default(autoincrement())
+  countryName String    @map("country_name")
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+
+  @@map("countries")
+}
+
+model VisaType {
+  id        Int       @id @default(autoincrement())
+  name      String
+  status    Status    @default(ACTIVE)
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  user      User[]
+
+  @@map("visa_type")
+}
+
+model AllDocuments {
+  id              Int             @id @default(autoincrement())
+  documentName    String          @map("document_name") @db.VarChar(350)
+  documentDetails String?         @map("document_details")
+  status          Status          @default(ACTIVE)
+  deletedAt       DateTime?       @map("deleted_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @default(now()) @map("updated_at")
+  document        StaffDocument[]
+
+  @@map("all_documents")
+}
+
+model Facility {
+  id            Int       @id @default(autoincrement())
+  hospitalName  String    @map("hospital_name")
+  alias         String?
+  contactNumber String?   @map("contact_number")
+  address       String?
+  city          String?
+  state         String?
+  country       String?
+  landmark      String?
+  deletedAt     DateTime? @map("deleted_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @map("updated_at")
+  jobs          Jobs[]
+
+  @@map("facilities")
+}
+
+model StaffDepartment {
+  id             Int       @id @default(autoincrement())
+  departmentName String    @map("department_name")
+  status         String
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+
+  @@map("staff_departments")
+}
+
+model Jobs {
+  id             Int             @id @default(autoincrement())
+  facilityId     Int             @map("facility_id")
+  jobTitle       String?         @map("job_title")
+  jobDescription String?         @map("job_description")
+  startDate      DateTime?       @map("start_date")
+  endDate        DateTime?       @map("end_date")
+  shiftType      String?         @map("shift_type")
+  workerType     String?         @map("worker_type")
+  speciality     String?
+  status         Status
+  deletedAt      DateTime?       @map("deleted_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @default(now()) @map("updated_at")
+  facility       Facility        @relation(fields: [facilityId], references: [id])
+  StaffTimeLogs  StaffTimeLogs[]
+  StaffRequest   StaffRequest[]
+
+  @@map("jobs")
+}
+
+model StaffAvailability {
+  id               Int       @id @default(autoincrement())
+  staffId          String    @map("staff_id")
+  startWeekDate    DateTime  @map("start_week_date")
+  endWeekDate      DateTime  @map("end_week_date")
+  daysAvailability Json      @map("days_availability")
+  deletedAt        DateTime? @map("deleted_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
+  user             User      @relation(fields: [staffId], references: [id])
+
+  @@map("staff_availability")
+}
+
+model StaffRequest {
+  id             Int                @id @default(autoincrement())
+  jobId          Int                @map("job_id")
+  staffId        String             @map("staff_id")
+  acceptRejectId String             @map("accept_reject_id") // Admin Id
+  status         StaffRequestStatus @default(PENDING)
+  deletedAt      DateTime?          @map("deleted_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @default(now()) @map("updated_at")
+  job            Jobs               @relation(fields: [jobId], references: [id])
+  user           User               @relation("StaffRequestStaff", fields: [staffId], references: [id])
+  admin          User               @relation("StaffRequestAdmin", fields: [acceptRejectId], references: [id])
+
+  @@map("staff_request")
+}
+
+model StaffTimeLogs {
+  id             Int            @id @default(autoincrement())
+  jobId          Int            @map("job_id")
+  staffId        String         @map("staff_id")
+  checkIn        DateTime       @map("check_in")
+  checkOut       DateTime       @map("checkOut")
+  break          Int
+  managerName    String         @map("manager_name") @db.VarChar(25)
+  managerEmail   String         @map("manager_email") @db.VarChar(50)
+  managerSignUrl String
+  status         TimeLogsStatus
+  deletedAt      DateTime?      @map("deleted_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @default(now()) @map("updated_at")
+  job            Jobs           @relation(fields: [jobId], references: [id])
+  user           User           @relation(fields: [staffId], references: [id])
+
+  @@map("staff_time_logs")
+}
+
+enum Status {
+  DISABLED
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+enum TimeLogsStatus {
+  APPROVED
+  DECLINED
+  DELETED
+  PENDING
+}
+
+enum StaffRequestStatus {
+  ACCEPTED
+  REJECTED
+  DELETED
+  PENDING
+}
+
+enum DocStatus {
+  APPROVED
+  REJECTED
+  DELETED
+  PENDING
+}
