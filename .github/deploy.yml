@@ -1,0 +1,36 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main   # runs only when you push to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/Hollilander--NestJs-Backend
+
+            echo "Fetching latest code..."
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "Installing dependencies..."
+            npm install --production
+
+            echo "Building app..."
+            npm run build
+
+            echo "Restarting PM2..."
+            pm2 restart Hollilander--NestJs-Backend || pm2 start dist/main.js --name "Hollilander--NestJs-Backend"
