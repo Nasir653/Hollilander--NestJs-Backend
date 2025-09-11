@@ -71,27 +71,27 @@ export class StaffAvailabilityController {
     }
   }
 
-  // @Delete(':id')
-  // async removeAvailability(@Param('id') id: number) {
-  //   try {
-  //     return this.staffAvailabilityService.remove(id);
-  //   } catch (error) {
-  //     return {
-  //       message: 'Staff availability deletion failed',
-  //       error: error,
-  //     };
-  //   }
-  // }
+  @Delete(':id')
+  async removeAvailability(@Param('id') id: number) {
+    try {
+      return this.staffAvailabilityService.remove(id);
+    } catch (error) {
+      return {
+        message: 'Staff availability deletion failed',
+        error: error,
+      };
+    }
+  }
 
-  // @Get('findsss/:id')
-  // async findAvailability(@Param('id') id: number) {
-  //   try {
-  //     return this.staffAvailabilityService.findOne(id);
-  //   } catch (error) {
-  //     return {
-  //       message: 'Staff availability fetching failed',
-  //       error: error,
-  //     };
-  //   }
-  // }
+  @Get('findsss/:id')
+  async findAvailability(@Param('id') id: number) {
+    try {
+      return this.staffAvailabilityService.findOne(id);
+    } catch (error) {
+      return {
+        message: 'Staff availability fetching failed',
+        error: error,
+      };
+    }
+  }
 }
